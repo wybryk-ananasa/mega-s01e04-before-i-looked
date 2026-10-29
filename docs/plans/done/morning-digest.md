@@ -1,6 +1,6 @@
 ---
 plan: morning-digest
-status: ready
+status: done
 owner: rook
 opened: 2026-10-29
 ---
@@ -77,3 +77,35 @@ page again with `LANE_MARKER` unset (the banner reads "no marker set") and uploa
 link. Move this plan to `docs/plans/done/` with its issue list.
 
 Done when: the preview link no longer shows the lane marker.
+
+## Review and verified cleanup
+
+The coordinator reports that the course confirmed the reviewer has seen the preview. The
+human separately approved replacing the same public URL with a marker-free export, deleting
+local preview artifacts, finishing this plan, and final submission.
+
+The coordinator verified cleanup after the marker-free deployment in
+[Actions run 40957259944](https://github.com/wybryk-ananasa/mega-s01e04-before-i-looked/actions/runs/40957259944)
+succeeded. Fetching the exact same public URL,
+<https://wybryk-ananasa.github.io/mega-s01e04-before-i-looked/>, returned HTTP 200: the original
+lane marker was absent, `<span class="marker">no marker set</span>` was present, and the
+digest remained intact. The coordinator also confirmed deletion of transient artifact
+`12933927894`. This satisfies the public cleanup condition for `status: done`; verification
+was performed by the coordinator, not the archive worker. Final submission and issue
+closure remain the coordinator's responsibility.
+
+## Issue list
+
+Source references below are preserved exactly from the GitHub issue bodies; `plan.md` refers
+to this plan before archival.
+
+| Issue | Work | Source reference |
+| --- | --- | --- |
+| [#1](https://github.com/wybryk-ananasa/mega-s01e04-before-i-looked/issues/1) | Digest types and reader contract | Source: plan.md § 1 |
+| [#2](https://github.com/wybryk-ananasa/mega-s01e04-before-i-looked/issues/2) | Read and aggregate nightly run logs | Source: plan.md § 1 |
+| [#3](https://github.com/wybryk-ananasa/mega-s01e04-before-i-looked/issues/3) | Digest HTML page: GET /digest/:night | Source: plan.md § 2a |
+| [#4](https://github.com/wybryk-ananasa/mega-s01e04-before-i-looked/issues/4) | Digest JSON endpoint: GET /api/digest/:night | Source: plan.md § 2b |
+| [#5](https://github.com/wybryk-ananasa/mega-s01e04-before-i-looked/issues/5) | Status board links and per-night status counts | Source: plan.md § 2c |
+| [#6](https://github.com/wybryk-ananasa/mega-s01e04-before-i-looked/issues/6) | Digest route integration tests | Source: plan.md § 2d |
+| [#7](https://github.com/wybryk-ananasa/mega-s01e04-before-i-looked/issues/7) | Export and submit the public HTML preview | Source: plan.md § 3 |
+| [#8](https://github.com/wybryk-ananasa/mega-s01e04-before-i-looked/issues/8) | Remove preview marker and archive the plan | Source: plan.md § 4 |
