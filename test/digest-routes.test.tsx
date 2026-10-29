@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
+import type { DigestResult } from '../src/digest/types.js';
 
 const temporaryDirectories: string[] = [];
 
@@ -19,6 +20,13 @@ function appFor(runsDir: string) {
     beatEverySeconds: 60,
     runsDir,
   });
+}
+
+function tableJobOrder(html: string) {
+  const table = html.match(/<table\b[^>]*>([\s\S]*?)<\/table>/i)?.[1] ?? '';
+  return [...table.matchAll(/<tr\b[^>]*>[\s\S]*?<td\b[^>]*>([\s\S]*?)<\/td>/gi)].map(([, cell]) =>
+    cell.replace(/<[^>]*>/g, '').trim(),
+  );
 }
 
 afterEach(async () => {
@@ -47,7 +55,7 @@ describe('digest routes', () => {
       app.request('/api/digest/2026-10-28'),
     ]);
     const html = await htmlResponse.text();
-    const result = await jsonResponse.json();
+    const result = (await jsonResponse.json()) as DigestResult;
 
     expect(htmlResponse.status).toBe(200);
     expect(jsonResponse.status).toBe(200);
@@ -61,10 +69,12 @@ describe('digest routes', () => {
         { job: 'zeta', owner: 'Zoe', runs: 4, retries: 3, lastStatus: 'retry', hasFailure: true },
       ],
     });
+    expect(tableJobOrder(html)).toEqual(result.rows.map(({ job }) => job));
     expect(html.indexOf('alpha')).toBeLessThan(html.indexOf('zeta'));
     expect(html).toContain('—');
     expect(html).toContain('Zoe');
     expect(html).toContain('connection lost');
+    expect(html.match(/class="warn"/g)).toHaveLength(2);
     expect(html).toContain('2026-10-28T09:02:00+02:00');
     expect(html).toContain('2026-10-28T09:05:00+02:00');
     expect(html).not.toMatch(/<script\b/i);
@@ -107,5 +117,24 @@ describe('digest routes', () => {
       badLines: 1,
       rows: [{ job: 'lunch', owner: null, firstAt: '2026-10-28T12:00:00-05:00' }],
     });
+  });
+
+  it('lists both fixture nights on the board with digest links and event counts', async () => {
+    const runsDir = await makeRunsDir();
+    await writeFile(
+      join(runsDir, '2026-10-27.jsonl'),
+      `${JSON.stringify({ at: '2026-10-27T20:00:00+02:00', job: 'evening', status: 'ok', owner: 'Sam' })}\n`,
+    );
+    await writeFile(
+      join(runsDir, '2026-10-28.jsonl'),
+      [
+        JSON.stringify({ at: '2026-10-28T09:00:00+02:00', job: 'breakfast', status: 'retry', owner: 'Sam' }),
+        JSON.stringify({ at: '2026-10-28T09:01:00+02:00', job: 'breakfast', status: 'fail', owner: 'Sam', error: 'failed' }),
+      ].join('\n'),
+    );
+    const html = await (await appFor(runsDir).request('/')).text();
+
+    expect(html).toContain('<a href="/digest/2026-10-28">2026-10-28</a> · ok 0 · retry 1 · fail 1');
+    expect(html).toContain('<a href="/digest/2026-10-27">2026-10-27</a> · ok 1 · retry 0 · fail 0');
   });
 });
