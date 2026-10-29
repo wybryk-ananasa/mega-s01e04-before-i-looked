@@ -82,7 +82,7 @@ Done when: the preview link no longer shows the lane marker.
 
 The coordinator reports that the course confirmed the reviewer has seen the preview. The
 human separately approved replacing the same public URL with a marker-free export, deleting
-local preview artifacts, finishing this plan, and final submission.
+temporary Actions artifacts, finishing this plan, and final submission.
 
 The coordinator verified cleanup after the marker-free deployment in
 [Actions run 40957259944](https://github.com/wybryk-ananasa/mega-s01e04-before-i-looked/actions/runs/40957259944)
