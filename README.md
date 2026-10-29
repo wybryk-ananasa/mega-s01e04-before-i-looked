@@ -10,3 +10,5 @@ pnpm dev               # http://localhost:8787
 ```
 
 Working on it with an agent: start at [AGENTS.md](AGENTS.md).
+
+Exporting a digest and the approval-gated Pages workflow: [docs/preview.md](docs/preview.md).

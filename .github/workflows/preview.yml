@@ -1,0 +1,65 @@
+name: Manual digest preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_marker:
+        description: Publish the lane marker (requires explicit human approval)
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm typecheck
+      - name: Export without loading .env
+        shell: bash
+        env:
+          INCLUDE_MARKER: ${{ inputs.include_marker }}
+          REQUESTED_MARKER: ${{ inputs.include_marker && secrets.LANE_MARKER || '' }}
+        run: |
+          set -euo pipefail
+          test ! -e .env
+          unset LANE_MARKER
+          if [[ "$INCLUDE_MARKER" == true ]]; then
+            if [[ -z "${REQUESTED_MARKER//[[:space:]]/}" ]]; then
+              echo 'Marker requested but repository secret LANE_MARKER is absent or blank.' >&2
+              exit 1
+            fi
+            export LANE_MARKER="$REQUESTED_MARKER"
+          fi
+          unset REQUESTED_MARKER
+          bash scripts/export-preview.sh
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: var/preview
+          retention-days: 1
+      - name: Deploy replaceable preview
+        id: deployment
+        uses: actions/deploy-pages@v4
