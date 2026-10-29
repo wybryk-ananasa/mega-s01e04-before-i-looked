@@ -5,17 +5,16 @@ function value(text: string | null | undefined) {
 }
 
 function DigestTable({ rows }: { rows: DigestRow[] }) {
-  const sorted = [...rows].sort((a, b) => a.job.localeCompare(b.job));
   return (
     <table>
       <thead>
         <tr>
           <th>job</th><th>owner</th><th>runs</th><th>retries</th><th>last status</th>
-          <th>last error</th><th>first time</th><th>last time</th>
+          <th>last error</th><th>first time</th><th>last time</th><th>attention</th>
         </tr>
       </thead>
       <tbody>
-        {sorted.map((row) => {
+        {rows.map((row) => {
           const warning = row.retries >= 3 || row.hasFailure;
           return (
             <tr>
@@ -27,7 +26,7 @@ function DigestTable({ rows }: { rows: DigestRow[] }) {
               <td class={row.hasFailure ? 'warn' : undefined}>{value(row.lastError)}</td>
               <td>{row.firstAt}</td>
               <td>{row.lastAt}</td>
-              {warning ? <td class="warn">attention</td> : null}
+              <td class={warning ? 'warn' : undefined}>{warning ? 'attention' : '—'}</td>
             </tr>
           );
         })}
