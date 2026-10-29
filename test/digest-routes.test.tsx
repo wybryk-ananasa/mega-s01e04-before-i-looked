@@ -29,6 +29,11 @@ function tableJobOrder(html: string) {
   );
 }
 
+function rowForJob(html: string, job: string) {
+  const table = html.match(/<table\b[^>]*>([\s\S]*?)<\/table>/i)?.[1] ?? '';
+  return table.match(new RegExp(`<tr\\b[^>]*>(?:(?!<tr\\b)[\\s\\S])*?${job}(?:(?!<tr\\b)[\\s\\S])*?<\\/tr>`, 'i'))?.[0] ?? '';
+}
+
 afterEach(async () => {
   await Promise.all(temporaryDirectories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })));
 });
@@ -74,7 +79,10 @@ describe('digest routes', () => {
     expect(html).toContain('—');
     expect(html).toContain('Zoe');
     expect(html).toContain('connection lost');
-    expect(html.match(/class="warn"/g)).toHaveLength(2);
+    const zetaRow = rowForJob(html, 'zeta');
+    expect(zetaRow).toMatch(/<td\b[^>]*class="warn"[^>]*>3<\/td>/i);
+    expect(zetaRow).toMatch(/<td\b[^>]*class="warn"[^>]*>retry<\/td>/i);
+    expect(zetaRow).toMatch(/<td\b[^>]*class="warn"[^>]*>[\s\S]*?attention[\s\S]*?<\/td>/i);
     expect(html).toContain('2026-10-28T09:02:00+02:00');
     expect(html).toContain('2026-10-28T09:05:00+02:00');
     expect(html).not.toMatch(/<script\b/i);
